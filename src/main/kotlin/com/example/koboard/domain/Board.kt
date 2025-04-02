@@ -2,6 +2,7 @@ package com.example.koboard.domain
 
 import com.example.koboard.dto.BoardRequest
 import jakarta.persistence.*
+import org.hibernate.annotations.BatchSize
 import java.time.LocalDateTime
 
 
@@ -19,6 +20,8 @@ class Board(
     var deleted : Boolean = false,
     var commentCount: Int = 0,
     @OneToMany(mappedBy = "board", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    @OrderBy("createdAt DESC")
+    @BatchSize(size = 10)
     val comments: List<Comment> = emptyList(),
 ){
     fun addComment(comment: Comment) = apply {

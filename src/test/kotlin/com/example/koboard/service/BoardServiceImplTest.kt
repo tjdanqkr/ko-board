@@ -4,6 +4,7 @@ import com.example.koboard.domain.Board
 import com.example.koboard.domain.Comment
 import com.example.koboard.domain.User
 import com.example.koboard.dto.BoardRequest
+import com.example.koboard.exception.BoardNotFoundException
 import com.example.koboard.repository.BoardRepository
 import com.example.koboard.repository.UserRepository
 import jakarta.persistence.EntityManager
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
+import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 
 
@@ -52,6 +54,7 @@ constructor(
             user = user,
             board = board
         )
+        em.persist(comment)
         em.flush()
         em.clear()
     }
@@ -65,8 +68,10 @@ constructor(
         }
         @Test
         fun `should throw exception if board not found`() {
-            assertThrows(IllegalArgumentException::class.java) {
+            assertThrows(BoardNotFoundException::class.java) {
                 boardService.getBoardById(0)
+            }.also {
+                assertEquals("Board(0) not found", it.message)
             }
         }
     }
@@ -114,24 +119,28 @@ constructor(
                 description = "test2",
             )
             // then
-            val assertThrows = assertThrows(IllegalArgumentException::class.java) {
+            val assertThrows = assertThrows(BoardNotFoundException::class.java) {
                 boardService.updateBoard(request, user, 0)
             }
-            assertEquals(assertThrows.message, "Board not found")
+            assertEquals(assertThrows.message, "Board(0) not found")
         }
     }
     @Nested
     inner class DeleteBoard{
         @Test
         fun `should delete board`() {
+            boardService.getAllBoards(Pageable.ofSize(1)).map {
+                println(it.id)
+            }
+
             val user = em.createQuery("select u from User u where id = :id", User::class.java)
                 .setParameter("id", user.id)
                 .singleResult
             boardService.deleteBoard(board.id!!, user)
-            val assertThrows = assertThrows(IllegalArgumentException::class.java) {
+            val assertThrows = assertThrows(BoardNotFoundException::class.java) {
                 boardService.getBoardById(board.id!!)
             }
-            assertEquals("Board not found", assertThrows.message)
+            assertEquals("Board(${board.id!!}) not found", assertThrows.message)
         }
     }
 
@@ -139,7 +148,7 @@ constructor(
     inner class GetAllBoards{
         @Test
         fun `should return all boards`() {
-            val boards = boardService.getAllBoards()
+            val boards = boardService.getAllBoards(Pageable.ofSize(1))
             assertEquals(1, boards.size)
         }
     }

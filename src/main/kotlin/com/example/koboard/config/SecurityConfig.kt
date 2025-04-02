@@ -9,7 +9,6 @@ import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.web.cors.CorsConfiguration
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
 @EnableWebSecurity
 @Configuration
@@ -24,12 +23,10 @@ class SecurityConfig (
         http.csrf { it.disable() }
 
         http.cors { it.configurationSource {
-            val source = UrlBasedCorsConfigurationSource()
             val config = CorsConfiguration()
             config.allowedOrigins = listOf("*")
             config.allowedMethods = listOf("*")
             config.allowedHeaders = listOf("*")
-            source.registerCorsConfiguration("/**", config)
             config
         } }
 

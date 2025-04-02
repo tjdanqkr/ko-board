@@ -4,6 +4,7 @@ import com.example.koboard.domain.User
 import com.example.koboard.dto.BoardRequest
 import com.example.koboard.dto.BoardResponse
 import com.example.koboard.dto.toEntity
+import com.example.koboard.exception.BoardNotFoundException
 import com.example.koboard.repository.BoardRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -18,7 +19,7 @@ class BoardServiceImpl(
     override fun getBoardById(id: Int): BoardResponse =
         boardRepository.findByIdAndDeletedFalse(id)
             ?.let { BoardResponse.from(it) }
-            ?: throw IllegalArgumentException("Board not found")
+            ?: throw BoardNotFoundException(id)
     @Transactional
     override fun createBoard(request: BoardRequest, me: User): BoardResponse =
         request.toEntity(me)
@@ -30,11 +31,11 @@ class BoardServiceImpl(
         boardRepository.findByIdAndDeletedFalse(id)
             ?.apply { update(request) }
             ?.let { BoardResponse.from(it) }
-            ?: throw IllegalArgumentException("Board not found")
+            ?: throw BoardNotFoundException(id)
 
     @Transactional
     override fun deleteBoard(id: Int, me: User) {
-        val board = boardRepository.findByIdAndDeletedFalse(id) ?: throw IllegalArgumentException("Board not found")
+        val board = boardRepository.findByIdAndDeletedFalse(id) ?: throw BoardNotFoundException(id)
         when {
             board.user?.id != me.id -> {
                 throw IllegalArgumentException("You are not the owner of this board")

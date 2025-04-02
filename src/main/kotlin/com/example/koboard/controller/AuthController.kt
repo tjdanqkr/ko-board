@@ -13,7 +13,7 @@ class AuthController (
     private val authService: AuthService
 ){
     @PostMapping("/api/v1/auth/sign-up")
-    fun createUser( @RequestBody request: UserRequest) = authService.signUp(request)
+    fun createUser(@RequestBody request: UserRequest) = authService.signUp(request)
 
 
     @PostMapping("/api/v1/auth/sign-in")
