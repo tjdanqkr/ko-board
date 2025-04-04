@@ -1,5 +1,6 @@
 package com.example.koboard.config
 
+import jakarta.servlet.http.HttpServletResponse
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
@@ -39,6 +40,12 @@ class SecurityConfig (
             .authenticated()
         }
         http.userDetailsService(userDetailsService)
+        http.exceptionHandling {
+            it
+            .authenticationEntryPoint { request, response, authException ->
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")
+            }
+        }
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
         return http.build();
     }

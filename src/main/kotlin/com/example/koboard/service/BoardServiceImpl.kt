@@ -23,7 +23,6 @@ class BoardServiceImpl(
     @Transactional
     override fun createBoard(request: BoardRequest, me: User): BoardResponse =
         request.toEntity(me)
-            .apply { me.addBoard(this) }
             .let { boardRepository.save(it) }
             .let { BoardResponse.from(it) }
     @Transactional

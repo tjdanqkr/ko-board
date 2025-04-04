@@ -11,7 +11,9 @@ import java.time.LocalDateTime
 @Table(name = "USERS")
 data class User(
     @Id @GeneratedValue var id: Int? = null,
+    @Column(name = "name", unique = true)
     var name: String,
+    @Column(name = "email", unique = true)
     var email: String,
     var _password: String,
     val createdAt: LocalDateTime = LocalDateTime.now(),

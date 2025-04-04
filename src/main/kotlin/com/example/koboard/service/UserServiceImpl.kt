@@ -32,8 +32,8 @@ class UserServiceImpl(
     override fun getAllUsers(): List<UserResponse> = userRepository.findAll().map { UserResponse.fromUser(it) }
     override fun loadUserByUsername(username: String?): UserDetails = username?.let { userRepository.findByName(it) } ?: throw IllegalArgumentException("User not found")
     override fun signIn(request: SignInRequest): TokenResponse {
-        val user = userRepository.findByEmail(request.email) ?: throw IllegalArgumentException("User not found")
-        if (!passwordEncoder.matches(request.password, user.password)) throw IllegalArgumentException("Password is incorrect")
+        val user = userRepository.findByEmail(request.email) ?: throw IllegalArgumentException("Login failed")
+        if (!passwordEncoder.matches(request.password, user.password)) throw IllegalArgumentException("Login failed")
         val dto = jwtService.createAccessToken(user.name)
         val accessToken = dto.token
         val expiresIn = dto.expiresAt
@@ -46,7 +46,8 @@ class UserServiceImpl(
 
     override fun signUp(userRequest: UserRequest) {
         when {
-            userRepository.findByEmail(userRequest.email?:throw IllegalArgumentException("User already exists")) != null -> throw IllegalArgumentException("User already exists")
+            userRepository.findByEmail(userRequest.email?:throw IllegalArgumentException("Email already exists")) != null -> throw IllegalArgumentException("Email already exists")
+            userRepository.findByName(userRequest.name?:throw IllegalArgumentException("Name already exists")) != null -> throw IllegalArgumentException("Name already exists")
             else -> userRepository.save(userRequest.toEntity(passwordEncoder.encode(userRequest.password?:throw IllegalArgumentException("Password must not be blank")))
             )
         }
